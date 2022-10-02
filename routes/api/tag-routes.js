@@ -9,12 +9,13 @@ router.get('/', (req, res) => {
     attributes: [
       'id',
       'tag_name'
-      [sequelize.literal('SELECT * FROM producttag WHERE tag.id = producttag.tag_id'), 'products']
     ],
     include: [
       {
         model: Product,
-        attributes: ['product_name']
+        attributes: ['product_name'],
+        through: ProductTag,
+        as: 'product-tag'
       }
     ]
   }).then(dbTagData => res.json(dbTagData))
@@ -28,29 +29,25 @@ router.get('/:id', (req, res) => {
     attributes: [
       'id',
       'tag_name'
-      [sequelize.literal('SELECT * FROM producttag WHERE tag.id = producttag.tag_id'), 'products']
     ],
     include: [
       {
         model: Product,
-        attributes: ['product_name']
+        attributes: ['product_name'],
+        through: ProductTag,
+        as: 'product-tag'
       }
     ]
   }).then(dbTagData => res.json(dbTagData))
 });
 
 router.post('/', (req, res) => {
-  Tag.create({
-    tag_name: req.body.tag_name
-  })
+  Tag.create(req.body)
   .then(dbTagData => res.json(dbTagData))
 });
 
 router.put('/:id', (req, res) => {
-  Tag.update(
-    {
-      tag_name: req.body.tag_name
-    },
+  Tag.update(req.body,
     {
       where: {
         id: req.params.id

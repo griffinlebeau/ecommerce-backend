@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { Category, Product } = require('../../models');
+const { Category, Product, ProductTag, Tag } = require('../../models');
 
 // The `/api/categories` endpoint
 
@@ -10,11 +10,17 @@ router.get('/', (req, res) => {
       'id',
       'category_name'
     ],
-    incude: [
+    include: [
       {
         model: Product,
-        attributes:['product_name']
-      }
+        attributes: ['id', 'product_name', 'price', 'stock'],
+        include: {
+          model: Tag,
+          attributes: ['id', 'tag_name'],
+          through: ProductTag,
+          as: 'product-tag'
+        }
+      },
     ]
   })
     .then(dbCatData => res.json(dbCatData))
@@ -33,8 +39,14 @@ router.get('/:id', (req, res) => {
     include: [
       {
         model: Product,
-        attributes: ['product_name']
-      }
+        attributes: ['id', 'product_name', 'price', 'stock'],
+        include: {
+          model: Tag,
+          attributes: ['id', 'tag_name'],
+          through: ProductTag,
+          as: 'product-tag'
+        }
+      },
     ]
   })
     .then(dbCatData => res.json(dbCatData))
@@ -48,10 +60,7 @@ router.post('/', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-  Category.update(
-    {
-      category_name: req.body.category_name
-    },
+  Category.update(req.body,
     {
       where: {
         id: req.params.id
@@ -59,7 +68,7 @@ router.put('/:id', (req, res) => {
     }
   )
   .then(dbCatData => {
-    if (!dbPostData) {
+    if (!dbCatData) {
       res.status(404).json({ message: 'No post found with this id' });
       return;
     }
@@ -75,7 +84,7 @@ router.delete('/:id', (req, res) => {
     }
   )
   .then(dbCatData => {
-    if (!dbPostData) {
+    if (!dbCatData) {
       res.status(404).json({ message: 'No post found with this id' });
       return;
     }

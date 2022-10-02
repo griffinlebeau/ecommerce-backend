@@ -11,12 +11,17 @@ router.get('/', (req, res) => {
       'product_name',
       'price',
       'stock',
-      [sequelize.literal('(SELECT * FROM producttag WHERE product.id = producttag.product_id'), 'tags']
     ],
     include: [
       {
         model: Category,
-        attributes: ['category_name']
+        attributes: ['id', 'category_name'],
+      },
+      {
+        model: Tag,
+        attributes: ['id', 'tag_name'],
+        through: ProductTag,
+        as: 'product-tag'
       }
     ]
   })
@@ -28,7 +33,7 @@ router.get('/', (req, res) => {
 
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', (req, res) => { // /api/products/:id
   Product.findOne({
     where: {
       id: req.params.id
@@ -38,12 +43,17 @@ router.get('/:id', (req, res) => {
       'product_name',
       'price',
       'stock',
-      [sequelize.literal('(SELECT * FROM producttag WHERE product.id = producttag.product_id')]
     ],
     include: [
       {
         model: Category,
-        attributes: ['category_name']
+        attributes: ['id', 'category_name'],
+      },
+      {
+        model: Tag,
+        attributes: ['id', 'tag_name'],
+        through: ProductTag,
+        as: 'product-tag'
       }
     ]
   })
@@ -54,7 +64,7 @@ router.get('/:id', (req, res) => {
   });
 });
 
-router.post('/', (req, res) => {
+router.post('/', (req, res) => { // /api/products
   Product.create(req.body)
     .then((product) => {
       if (req.body.tagIds.length) {
@@ -75,7 +85,7 @@ router.post('/', (req, res) => {
     });
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', (req, res) => { // /api/products/:id
   Product.update(req.body, {
     where: {
       id: req.params.id,
@@ -108,7 +118,7 @@ router.put('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', (req, res) => { // /api/products/:id
  Product.destroy({
    where: {
      id: req.params.id
@@ -119,7 +129,7 @@ router.delete('/:id', (req, res) => {
     res.status(404).json({ message: 'No post found with this id' });
     return;
   }
-  res.json(dbProdtData);
+  res.json(dbProdData);
 })
 });
 
